@@ -20,7 +20,7 @@ from keras.preprocessing.image import ImageDataGenerator
 train_datagen = ImageDataGenerator(rescale=1./255)
 
 train_generator = train_datagen.flow_from_directory(
-    'C:\\Projects\\keras_talk\\train_set',
+    'C:\\Users\\thswl\\PycharmProjects\\junchuri\\train',
     target_size=(224, 224),
     batch_size=35,
     class_mode='categorical')
@@ -28,7 +28,7 @@ train_generator = train_datagen.flow_from_directory(
 test_datagen = ImageDataGenerator(rescale=1./225)
 
 test_generator = train_datagen.flow_from_directory(
-    'C:\\Projects\\keras_talk\\test_set',
+    'C:\\Users\\thswl\\PycharmProjects\\junchuri\\test',
     target_size=(224, 224),
     batch_size=35,
     class_mode='categorical')
