@@ -1,37 +1,63 @@
 
 # coding: utf-8
 
-# In[5]:
+# In[42]:
 
 
-#현재 dropout 설정 없음/ padding은 0인 상태... 알맞은 상태로 설정을 해야함
-#마지막 계층 Dense는 출력 노드가 1개인지 2개인지 확인 필요
-#class_mode를 무엇을 사용해야하는지 모르겠다.... binary vs categorical
+'''
+풀 커넥션 부분에 드롭아웃 설정했음 (0.5)의 값으로
+no padding 은 padding 값을 valid로 주어야한다
+마지막 계층 Dense는 출력 노드가 1개로 설정
+class_mode는 binary를 사용했다 : 분류할 클래스는 2개 뿐이라서
+만일 데이테 셋을 100개 정도만 하면 test 값이 일정한 값으로 고정이 되어버림....
+'''
+
+#dropout 위치?
+#padding은 0인 상태... 알맞은 상태로 수정필요...
+#모델 저장해서 테스트 일 때만 학습된것을 불러와서 사용하는것이 가능한지?
+#val_acc를 이용하여 현재의 이미지 상태 호출(함수로 구현)
+#데이터 셋 설정시 매개변수 설정을 하면 몇개나 만들어 지는지?
+#내가 만든 모델이 정확한 값으로 가는지 의문점.... 강아지 고양이 데이터 셋으로 학인필요함
+
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Flatten
+from keras.layers import Dropout
 from keras.layers.convolutional import Conv2D
 from keras.layers.convolutional import MaxPooling2D
 from keras.utils import np_utils
 from keras.preprocessing.image import ImageDataGenerator
+from keras.models import load_model
+import matplotlib.pyplot as plt
+
 
 #데이터셋 설정
-train_datagen = ImageDataGenerator(rescale=1./255)
+train_datagen = ImageDataGenerator(rescale=1./255,rotation_range = 90,width_shift_range=0.1,
+                                   height_shift_range =0.1, zoom_range=0.2, horizontal_flip =True, vertical_flip = True)
 
 train_generator = train_datagen.flow_from_directory(
+<<<<<<< HEAD
     'C:\\Users\\thswl\\PycharmProjects\\junchuri\\train',
+=======
+    'C:\\Projects\\keras_talk\\train1_set',
+>>>>>>> 6a44bcbd41a50b085ae953e6dbe90ad368e210f3
     target_size=(224, 224),
-    batch_size=35,
-    class_mode='categorical')
+    batch_size=4,
+    class_mode='binary')
 
-test_datagen = ImageDataGenerator(rescale=1./225)
+test_datagen = ImageDataGenerator(rescale=1./225, rotation_range =90, width_shift_range=0.1,
+                                 height_shift_range =0.1, zoom_range=0.2, horizontal_flip= True, vertical_flip=True)
 
 test_generator = train_datagen.flow_from_directory(
+<<<<<<< HEAD
     'C:\\Users\\thswl\\PycharmProjects\\junchuri\\test',
+=======
+    'C:\\Projects\\keras_talk\\test1_set',
+>>>>>>> 6a44bcbd41a50b085ae953e6dbe90ad368e210f3
     target_size=(224, 224),
-    batch_size=35,
-    class_mode='categorical')
+    batch_size=4,
+    class_mode='binary')
 
 #알렉스넷 모델 생성
 model = Sequential()
@@ -60,21 +86,55 @@ model.add(Flatten())
 
 #Alexnet - 계층 6 : 4096개의 출력뉴런, 활성화함수 = relu
 model.add(Dense(4096, activation='relu'))
+model.add(Dropout(0.5))
 
 #Alexnet - 계층 7 : 4096게의 출력뉴런, 활성화함수 = relu
 model.add(Dense(4096, activation='relu'))
+model.add(Dropout(0.5))
 
 #Alexnet - 계층 8 : 1개의 출력뉴런, 활성화함수 = sigmoid
-model.add(Dense(2, activation='sigmoid'))
+model.add(Dense(1, activation='sigmoid'))
 
 #학습과정 설정 - 손실함수는 크로스엔트로피, 가중치 검색은 아담
-model.compile(loss='categorical_crossentropy', optimizer='adam',metrics=['accuracy'])
+model.compile(loss='binary_crossentropy', optimizer='adam',metrics=['accuracy'])
 
 model.summary()
 
 #Alexnet - 학습하기
-model.fit_generator(train_generator, steps_per_epoch=20, epochs=10, validation_data=test_generator, validation_steps=50)
+hist = model.fit_generator(train_generator, steps_per_epoch=2, epochs=6, validation_data=test_generator, validation_steps=1)
 
+#Alexnet - 그래프 그리기
+fig, loss_ax = plt.subplots()
 
+acc_ax = loss_ax.twinx()
 
+loss_ax.plot(hist.history['loss'],'y',label='train loss')
+loss_ax.plot(hist.history['val_loss'],'r',label = 'val loss')
+
+acc_ax.plot(hist.history['acc'],'b',label='train acc')
+acc_ax.plot(hist.history['val_acc'], 'g', label='val acc')
+
+loss_ax.set_xlabel('epoch')
+loss_ax.set_ylabel('loss')
+acc_ax.set_ylabel('accuracy')
+
+loss_ax.legend(loc='upper left')
+loss_ax.legend(loc='lower left')
+
+plt.show()
+
+#모델 저장하기
+#model.save('Alexnet.h5')
+
+#모델 평가하기
+'''
+test 할 이미지를 다시 imagedatagenerator를 이용하여 평가를 한다
+이때의 함수는 evaluate_generator() 이용
+'''
+
+#모델 사용하기
+'''
+함수를 이용하여 구축
+if를 이용한 val_acc를 판단
+'''
 
